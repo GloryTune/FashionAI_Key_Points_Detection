@@ -25,15 +25,15 @@ from PIL import Image
 from keras.backend.tensorflow_backend import set_session
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
+sys.path.append("/home/tianyou/PycharmProjects/FashionAI_Key_Points_Detection/code")
 #设置gpu内存动态增长
 gpu_options = tf.GPUOptions(allow_growth=True)
 set_session(tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)))
 
 # Root directory of the project
-ROOT_DIR = '../'
+ROOT_DIR = '/home/tianyou/PycharmProjects/FashionAI_Key_Points_Detection/'
 
-fi_class_names = ['blouse']
+fi_class_names = ['dress']
 # Directory to save logs and trained model
 MODEL_DIR = os.path.join(ROOT_DIR, "logs/{}_logs".format(fi_class_names[0]))
 SELF_MODEL_PATH=os.path.join(ROOT_DIR,"model/mask_rcnn_{}.h5".format(fi_class_names[0]))
@@ -93,7 +93,7 @@ class FIConfig(Config):
 
     RPN_TRAIN_ANCHORS_PER_IMAGE = 150
     VALIDATION_STPES = 100
-    STEPS_PER_EPOCH = 1000
+    STEPS_PER_EPOCH = 10
     MINI_MASK_SHAPE = (56, 56)
     KEYPOINT_MASK_POOL_SIZE = 7
             # Pooled ROIs
@@ -109,9 +109,9 @@ config = FIConfig()
 
 
 def pic_height_width(filepath):
-    fp = open(filepath, 'rb')
-    im = Image.open(fp)
-    fp.close()
+    with open(filepath,'rb') as fp:
+        im = Image.open(fp)
+
     x, y = im.size
     if(im.mode =='RGB'):
         return x,y
@@ -137,7 +137,7 @@ class FIDataset(utils.Dataset):
             self.add_class("FI", i + 1, class_name)
 
         if category=='train':
-            data_path = '../data/train/'
+            data_path = '/home/tianyou/PycharmProjects/FashionAI_Key_Points_Detection/data/train/'
             annotations = pd.read_csv('../data/train/Annotations/annotations.csv')
             annotations = annotations.append(pd.read_csv('../data/train/Annotations/train.csv'), ignore_index=True)
             annotations = annotations.append(pd.read_csv('../data/train/Annotations/test_a.csv'), ignore_index=True)
@@ -168,6 +168,7 @@ class FIDataset(utils.Dataset):
             id = annotations.loc[x, 'image_id']
             category = annotations.loc[x, 'image_category']
             print('loading image:%d/%d'%(x,annotations.shape[0]))
+            #data_path = '/home/tianyou/PycharmProjects/FashionAI_Key_Points_Detection/data/val'
             im_path = os.path.join(data_path, id)
 
             # height, width = cv2.imread(im_path).shape[0:2]
@@ -301,19 +302,19 @@ if __name__== '__main__':
     print("Train heads")
     model.train(dataset_train, dataset_val,
            learning_rate=config.LEARNING_RATE,
-           epochs=200,
+           epochs=20,
            layers='heads')
 
     print("Train heads")
     model.train(dataset_train, dataset_val,
            learning_rate=config.LEARNING_RATE/10,
-           epochs=400,
+           epochs=40,
            layers='heads')
     
     print("Train 4+")
     model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE/10,
-            epochs=600,
+            epochs=60,
             layers='4+')
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up

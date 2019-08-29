@@ -20,7 +20,7 @@ ROOT_DIR = '../'
 
 #piont names and class name
 '''添加fashion ai'''
-fi_class_names = ['dress']
+fi_class_names = ['blouse']
 
 # Directory to save logs and trained model
 MODEL_DIR = os.path.join(ROOT_DIR, "logs/{}_logs".format(fi_class_names[0]))
@@ -106,11 +106,11 @@ test data set class
 '''
 class FITestDataset(utils.Dataset):
     def load_FI_test(self):
-        test_data_path='../data/round2test'
+        test_data_path='../data/test'
         # Add classes
         for i, class_name in enumerate(fi_class_names):
             self.add_class("FI", i + 1, class_name)
-        annotations = pd.read_csv('../data/round2test/test.csv')
+        annotations = pd.read_csv('../data/test/test.csv')
         annotations = annotations.loc[annotations['image_category'] == fi_class_names[0]]
 
         annotations = annotations.reset_index(drop=True)  # 更新索引
@@ -198,11 +198,11 @@ if __name__ =='__main__':
         results = model.detect_keypoint([image], verbose=0)
 
         r = results[0]  # for one image
-        # log("image", image)
-        # log("rois", r['rois'])
-        # log("keypoints", r['keypoints'])
-        # log("class_ids", r['class_ids'])
-        # log("keypoints", r['keypoints'])
+        log("image", image)
+        log("rois", r['rois'])
+        log("keypoints", r['keypoints'])
+        log("class_ids", r['class_ids'])
+        log("keypoints", r['keypoints'])
         error_count=0
         try:#统计未检测出目标的图片
             key_points = keypoint_map_to24(r['keypoints'][0], fi_class_names[0])
@@ -210,7 +210,7 @@ if __name__ =='__main__':
             key_points =np.array([[[0,0,0] for i in range(24)]])
             error_count+=1
 
-        # visualize.display_keypoints(image,r['rois'],r['keypoints'], r['class_ids'], dataset_test.class_names)
+        visualize.display_keypoints(image,r['rois'],r['keypoints'], r['class_ids'], dataset_test.class_names)
 
         point_str=keypoint_to_str(key_points)#把坐标转为字符
         print(point_str)
